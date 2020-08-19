@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>JQuery Assignment</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<!-- plugin file -->
+	<script type="text/javascript" src="https://rawgit.com/RobinHerbots/jquery.inputmask/3.x/dist/jquery.inputmask.bundle.js"></script>
+	<script type="text/javascript">
+
+		$(document).ready(function() {
+		    var ipv4_address = $('#ipv4');
+		    ipv4_address.inputmask({
+		        alias: "ip",
+		        greedy: false
+		    });
+
+		$("#btnSend").click(function(){
+		   var flag = validateIPAddress();
+		   var ip = $("#ipv4").val();
+		   if(flag === true){
+		   		var settings={
+
+				type:"GET",
+				dataType:"json",
+				url: "https://freegeoip.app/json/"+ip,
+				success: MySuccessFunction,
+				error: OnError
+			};
+
+			$.ajax(settings);
+			console.log("Request Send");
+
+		    return (true);
+
+		   }
+	    });
+
+	    function MySuccessFunction(r){
+	    	var a = $("<tr><td>"+r.ip+"</td><td>"+r.country_code+"</td><td>"+r.country_name+"</td><td><button id='btnRemove' class='remove' >Remove</button></td><tr/>");
+
+	    	$("#dataTable").append(a);
+		}
+
+    	$(document).on( "click", "button.remove" ,function(){
+			var currentRow = $(this).closest("tr");
+			var col1 = currentRow.find("td:eq(0)").text();
+			var col2 = currentRow.find("td:eq(1)").text();
+			var col3 = currentRow.find("td:eq(2)").text();
+			
+			showMessage("Removed!\nIP: "+col1+"\n"+"country code: "+col2+"\ncountry name: "+col3);
+
+			$(this).parent().parent().remove();
+		});
+
+		function OnError(){
+			console.log("Error has occured");
+		}
+
+
+		function showMessage(message) {
+			
+		  if (!("Notification" in window)) {
+		    // Code to run if notifications are not
+		    // supported by the visitor's browser
+		  } 
+		  else 
+		  {
+		    if (Notification.permission === "granted") {
+		      var notification = new Notification(message);
+		    }
+		    else if (Notification.permission !== "denied") {
+		      Notification.requestPermission().then(function (permission) {
+		        if (permission === "granted") {
+		          var notification = new Notification(message);
+		        }
+		        setTimeout( notification.close.bind(notification), 3000);
+		  });
+		    }
+		  }
+		}
+
+
+    	function validateIPAddress() {
+        
+			var textBox=$("#ipv4");
+            var entered_ip = textBox.val();
+            if (entered_ip) {
+                /*split the resulted string by "." character through the jquery split method and save the splited values into an array*/
+                var ip_fields_array = entered_ip.split(".");
+                /* save the formatted ip the replace() method searches a string for a specified value, or a regular expression, and returns a new string where the specified values are replaced. (in this case we perform a global replacement)*/
+                var formatted_ip = entered_ip.replace(/_/g, "");
+                
+                /* make a html block for incorrect ip address error */
+                var ip_error = document.createElement("span");
+                ip_error.setAttribute("id", "ip_error");
+                var error_message = document.createTextNode(formatted_ip + " is an incorrect IPv4 address");
+                ip_error.appendChild(error_message);
+
+
+                /* make a html block for correct ip address */
+                var ip_correct = document.createElement("span");
+                ip_correct.setAttribute("id", "ip_success");
+                var success_message = document.createTextNode(formatted_ip + " is a correct IPv4 address");
+                ip_correct.appendChild(success_message);
+                
+
+                /*regular expression that starts with 0 and continue with any digit */
+                var regex = /^0([0-9])+/;
+                /* make an iteration through every item from array */
+                for (var i = 0; i < ip_fields_array.length; i++) {
+                    var ip_field = ip_fields_array[i];
+                    /*remove the "_" char and then test the regex true -> if we encounter a string that starts with 0 and continue with any character (other than white space)false -> otherwise*/
+                    var regex_result = regex.test(ip_field.replace(/_/g, ""));
+                    /*show the error message if one ip field is not entered ("___") and if the regex created is true */
+                    if (ip_field == "___" || regex_result == true) {
+                        textBox.siblings("#ip_success").remove();
+                        if (textBox.siblings("#ip_error").length == 0) {
+                            textBox.parent().append(ip_error);
+                            textBox.removeClass("has-success").addClass("has-error");
+                        }
+                        return false;
+
+                    } else {
+                        if (textBox.siblings("#ip_success").length == 0) {
+                            textBox.parent().append(ip_correct);
+                            textBox.removeClass("has-error").addClass("has-success");
+                        }
+                    }
+                }
+	       		$(textBox).on("focus", function() {
+		           $(this).siblings('#ip_success, #ip_error').remove();
+		        });
+             	return true;   
+            }
+    	}
+
+
+	});
+	
+	</script>
+	
+	<style type="text/css">
+		.has-success {
+		    border: 1px solid #4cae4c ;
+		    color: #green;
+		}
+		.has-error {
+		    border: 1px solid #d43f3a;
+		    color: #red;
+		}
+		#ip_success { 
+			color: green; 
+		}
+		#ip_error{ 
+			color: red; 
+		}
+		#tr1{
+			font-weight: bold;
+		}
+		table, th, td{
+			border: 1px solid black;
+		}
+	</style>
+</head>
+<body>
+
+    <div class="container">
+        <label>Enter IP Address: </label>
+        <input type="text" id="ipv4" />
+        <input type="button" id="btnSend" value="Send">
+    </div>
+    <br>
+    <br>
+   
+    <div id="tDiv">
+		<table id="dataTable" style="width:100%;border-collapse: collapse;">
+		  <tr id="tr1">
+		    <td>IP Address</td>
+		    <td>Country Code</td>
+		    <td>Country Name</td>
+		    <td>Action</td>
+		  </tr>
+		</table>
+	</div>
+
+</body>
+</html>       
