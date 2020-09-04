@@ -1,5 +1,5 @@
 # JQuery
-JQuery Assignment:
+This Repo contains the source code for the following assignment in JQuery:
 
 Make a page(UI is not very important but do not use alert for anything) with text box to take input of IP address.
 What ever ip address user enters (first validate it), get its country from https://freegeoip.net/json/[ip_address]
